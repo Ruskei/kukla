@@ -1,0 +1,10 @@
+name: kukla-ragdolls
+version: '0.0.0'
+main: com.ixume.kuklaRagdolls.KuklaRagdolls
+api-version: '1.21'
+load: STARTUP
+authors: [ Ruskei ]
+description: Library for reducing packets for display entities
+
+commands:
+  kukla:
