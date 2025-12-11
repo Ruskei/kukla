@@ -4,6 +4,8 @@ import com.ixume.kuklaRagdolls.udar.ItemDisplayCuboid
 import com.ixume.udar.body.active.ActiveBody
 import com.ixume.udar.body.active.Cuboid
 import com.ixume.udar.body.active.tag.Tag
+import com.ixume.udar.physics.cone.ConeConstraint
+import com.ixume.udar.physics.hinge.HingeConstraint
 import com.ixume.udar.physicsWorld
 import kr.toxicity.model.api.BetterModel
 import kr.toxicity.model.api.util.TransformedItemStack
@@ -14,7 +16,7 @@ import org.joml.Vector3d
 import org.joml.Vector3f
 
 object RagdollCreator {
-    fun create(player: Player) {
+    fun create(player: Player): Ragdoll {
         val skinManager = BetterModel.plugin().skinManager()
         val data = skinManager.getOrRequest((player as CraftPlayer).handle.gameProfile)
         val head = spawnObj(player, data.head(), "head")
@@ -30,181 +32,198 @@ object RagdollCreator {
         val leftLeg = spawnObj(player, data.leftLeg(), "leftLeg")
         val leftForeLeg = spawnObj(player, data.leftForeLeg(), "leftForeLeg")
 
-
-        join(
+        joinCone(
             a = head,
             aName = "head",
             aPos = Vector3f(0.0f, -0.5f + MARGIN, 0.0f),
             b = chest,
             bName = "chest",
             bPos = Vector3f(0.0f, 0.5f - MARGIN, 0.0f),
-            jA = Vector3f(0.0f, 1.0f, 0.0f),
-            jB = Vector3f(0.0f, 1.0f, 0.0f),
-            gA = Vector3f(0.0f, 0.0f, 1.0f),
-            gB = Vector3f(0.0f, 0.0f, 1.0f),
-            swingAngle = Math.toRadians(40.0).toFloat(),
+            x1 = Vector3f(1f, 0f, 0f),
+            y1 = Vector3f(0f, 0f, 1f),
+            x2 = Vector3f(1f, 0f, 0f),
+            z2 = Vector3f(0f, -1f, 0f),
+            maxXAngle = Math.toRadians(40.0).toFloat(),
+            maxYAngle = Math.toRadians(40.0).toFloat(),
             minTwistAngle = -Math.toRadians(60.0).toFloat(),
             maxTwistAngle = Math.toRadians(60.0).toFloat()
         )
 
-        join(
+        joinCone(
             a = chest,
             aName = "chest",
             aPos = Vector3f(0.0f, -0.5f + MARGIN, 0.0f),
             b = waist,
             bName = "waist",
             bPos = Vector3f(0.0f, 0.5f - MARGIN, 0.0f),
-            jA = Vector3f(0.0f, 1.0f, 0.0f),
-            jB = Vector3f(0.0f, 1.0f, 0.0f),
-            gA = Vector3f(0.0f, 0.0f, 1.0f),
-            gB = Vector3f(0.0f, 0.0f, 1.0f),
-            swingAngle = Math.toRadians(20.0).toFloat(),
+            x1 = Vector3f(1f, 0f, 0f),
+            y1 = Vector3f(0f, 0f, 1f),
+            x2 = Vector3f(1f, 0f, 0f),
+            z2 = Vector3f(0f, -1f, 0f),
+            maxXAngle = Math.toRadians(20.0).toFloat(),
+            maxYAngle = Math.toRadians(20.0).toFloat(),
             minTwistAngle = -Math.toRadians(10.0).toFloat(),
             maxTwistAngle = Math.toRadians(10.0).toFloat()
         )
 
-        join(
+        joinCone(
             a = waist,
             aName = "waist",
             aPos = Vector3f(0.0f, -0.5f + MARGIN, 0.0f),
             b = hip,
             bName = "hip",
             bPos = Vector3f(0.0f, 0.5f - MARGIN, 0.0f),
-            jA = Vector3f(0.0f, 1.0f, 0.0f),
-            jB = Vector3f(0.0f, 1.0f, 0.0f),
-            gA = Vector3f(0.0f, 0.0f, 1.0f),
-            gB = Vector3f(0.0f, 0.0f, 1.0f),
-            swingAngle = Math.toRadians(20.0).toFloat(),
+            x1 = Vector3f(1f, 0f, 0f),
+            y1 = Vector3f(0f, 0f, 1f),
+            x2 = Vector3f(1f, 0f, 0f),
+            z2 = Vector3f(0f, -1f, 0f),
+            maxXAngle = Math.toRadians(20.0).toFloat(),
+            maxYAngle = Math.toRadians(20.0).toFloat(),
             minTwistAngle = -Math.toRadians(10.0).toFloat(),
             maxTwistAngle = Math.toRadians(10.0).toFloat()
         )
-
-        join(
-            a = rightArm,
-            aName = "rightArm",
-            aPos = Vector3f(0.5f - MARGIN, 0.5f, 0.0f),
-            b = chest,
-            bName = "chest",
-            bPos = Vector3f(-0.5f + MARGIN, 0.5f, 0.0f),
-            jA = Vector3f(0.0f, -1.0f, 0.0f),
-            jB = Vector3f(-1.0f, 0.0f, 0.0f),
-            gA = Vector3f(1.0f, 0.0f, 0.0f),
-            gB = Vector3f(0.0f, -1.0f, 0.0f),
-            swingAngle = Math.toRadians(85.0).toFloat(),
-            minTwistAngle = -Math.toRadians(5.0).toFloat(),
-            maxTwistAngle = Math.toRadians(5.0).toFloat(),
-            aOffset = Vector3f(0f, -0.1f, 0f),
-            bOffset = Vector3f(0f, -0.1f, 0f),
+//
+        joinCone(
+            a = chest,
+            aName = "chest",
+            aPos = Vector3f(-0.5f + MARGIN, 0.5f, 0.0f),
+            b = rightArm,
+            bName = "rightArm",
+            bPos = Vector3f(0.5f - MARGIN, 0.5f, 0.0f),
+            x1 = Vector3f(1f, 0f, 0f),
+            y1 = Vector3f(0f, 0f, 1f),
+            x2 = Vector3f(1f, 0f, 0f),
+            z2 = Vector3f(0f, -1f, 0f),
+            maxXAngle = Math.toRadians(85.0).toFloat(),
+            maxYAngle = Math.toRadians(80.0).toFloat(),
+            minTwistAngle = -Math.toRadians(30.0).toFloat(),
+            maxTwistAngle = Math.toRadians(30.0).toFloat()
         )
 
-        join(
+        joinCone(
+            a = chest,
+            aName = "chest",
+            aPos = Vector3f(0.5f - MARGIN, 0.5f, 0.0f),
+            b = leftArm,
+            bName = "leftArm",
+            bPos = Vector3f(-0.5f + MARGIN, 0.5f, 0.0f),
+            x1 = Vector3f(1f, 0f, 0f),
+            y1 = Vector3f(0f, 0f, 1f),
+            x2 = Vector3f(1f, 0f, 0f),
+            z2 = Vector3f(0f, -1f, 0f),
+            maxXAngle = Math.toRadians(85.0).toFloat(),
+            maxYAngle = Math.toRadians(80.0).toFloat(),
+            minTwistAngle = -Math.toRadians(30.0).toFloat(),
+            maxTwistAngle = Math.toRadians(30.0).toFloat()
+        )
+
+        joinHinge(
             a = rightArm,
             aName = "rightArm",
             aPos = Vector3f(0.0f, -0.5f + MARGIN, 0.0f),
             b = rightForeArm,
             bName = "rightForeArm",
             bPos = Vector3f(0.0f, 0.5f - MARGIN, 0.0f),
-            jA = Vector3f(1.0f, 0.0f, 0.0f),
-            jB = Vector3f(1.0f, 0.0f, 0.0f),
-            gA = Vector3f(0.0f, 1.0f, 0.0f),
-            gB = Vector3f(0.0f, 1.0f, 0.0f),
-            minAngle = -Math.toRadians(80.0).toFloat(),
-            maxAngle = 0f,
+            a1 = Vector3f(1f, 0f, 0f),
+            n1 = Vector3f(0f, 1f, 0f),
+            a2 = Vector3f(1f, 0f, 0f),
+            n2 = Vector3f(0f, 1f, 0f),
+            minAngle = 0f,
+            maxAngle = Math.toRadians(150.0).toFloat()
         )
 
-        join(
-            a = leftArm,
-            aName = "leftArm",
-            aPos = Vector3f(-0.5f + MARGIN, 0.5f, 0.0f),
-            b = chest,
-            bName = "chest",
-            bPos = Vector3f(0.5f - MARGIN, 0.5f, 0.0f),
-            jA = Vector3f(0.0f, -1.0f, 0.0f),
-            jB = Vector3f(1.0f, 0.0f, 0.0f),
-            gA = Vector3f(-1.0f, 0.0f, 0.0f),
-            gB = Vector3f(0.0f, -1.0f, 0.0f),
-            swingAngle = Math.toRadians(85.0).toFloat(),
-            minTwistAngle = -Math.toRadians(5.0).toFloat(),
-            maxTwistAngle = Math.toRadians(5.0).toFloat(),
-            aOffset = Vector3f(0f, -0.1f, 0f),
-            bOffset = Vector3f(0f, -0.1f, 0f),
-        )
-
-        join(
+        joinHinge(
             a = leftArm,
             aName = "leftArm",
             aPos = Vector3f(0.0f, -0.5f + MARGIN, 0.0f),
             b = leftForeArm,
             bName = "leftForeArm",
             bPos = Vector3f(0.0f, 0.5f - MARGIN, 0.0f),
-            jA = Vector3f(1.0f, 0.0f, 0.0f),
-            jB = Vector3f(1.0f, 0.0f, 0.0f),
-            gA = Vector3f(0.0f, 1.0f, 0.0f),
-            gB = Vector3f(0.0f, 1.0f, 0.0f),
-            minAngle = -Math.toRadians(80.0).toFloat(),
-            maxAngle = 0f,
+            a1 = Vector3f(1f, 0f, 0f),
+            n1 = Vector3f(0f, 1f, 0f),
+            a2 = Vector3f(1f, 0f, 0f),
+            n2 = Vector3f(0f, 1f, 0f),
+            minAngle = 0f,
+            maxAngle = Math.toRadians(150.0).toFloat()
         )
 
-        join(
+        joinCone(
             a = rightLeg,
             aName = "rightLeg",
             aPos = Vector3f(0.0f, 0.5f - MARGIN, 0.0f),
             b = hip,
             bName = "hip",
             bPos = Vector3f(-0.25f, -0.5f + MARGIN, 0.0f),
-            jA = Vector3f(0.0f, 1.0f, 0.0f),
-            jB = Vector3f(0.0f, 1.0f, 0.0f),
-            gA = Vector3f(0.0f, 0.0f, 1.0f),
-            gB = Vector3f(0.0f, 0.0f, 1.0f),
-            swingAngle = Math.toRadians(70.0).toFloat(),
-            minTwistAngle = -Math.toRadians(20.0).toFloat(),
-            maxTwistAngle = Math.toRadians(20.0).toFloat(),
+            x1 = Vector3f(1f, 0f, 0f),
+            y1 = Vector3f(0f, 0f, 1f),
+            x2 = Vector3f(1f, 0f, 0f),
+            z2 = Vector3f(0f, -1f, 0f),
+            maxXAngle = Math.toRadians(70.0).toFloat(),
+            maxYAngle = Math.toRadians(20.0).toFloat(),
+            minTwistAngle = -Math.toRadians(10.0).toFloat(),
+            maxTwistAngle = Math.toRadians(10.0).toFloat()
         )
 
-        join(
+        joinHinge(
             a = rightLeg,
             aName = "rightLeg",
             aPos = Vector3f(0.0f, -0.5f + MARGIN, 0.0f),
             b = rightForeLeg,
             bName = "rightForeLeg",
             bPos = Vector3f(0.0f, 0.5f - MARGIN, 0.0f),
-            jA = Vector3f(1.0f, 0.0f, 0.0f),
-            jB = Vector3f(1.0f, 0.0f, 0.0f),
-            gA = Vector3f(0.0f, 1.0f, 0.0f),
-            gB = Vector3f(0.0f, 1.0f, 0.0f),
+            a1 = Vector3f(1f, 0f, 0f),
+            n1 = Vector3f(0f, 1f, 0f),
+            a2 = Vector3f(1f, 0f, 0f),
+            n2 = Vector3f(0f, 1f, 0f),
             minAngle = 0f,
-            maxAngle = Math.toRadians(80.0).toFloat(),
+            maxAngle = Math.toRadians(80.0).toFloat()
         )
 
-        join(
+        joinCone(
             a = leftLeg,
             aName = "leftLeg",
             aPos = Vector3f(0.0f, 0.5f - MARGIN, 0.0f),
             b = hip,
             bName = "hip",
             bPos = Vector3f(0.25f, -0.5f + MARGIN, 0.0f),
-            jA = Vector3f(0.0f, 1.0f, 0.0f),
-            jB = Vector3f(0.0f, 1.0f, 0.0f),
-            gA = Vector3f(0.0f, 0.0f, 1.0f),
-            gB = Vector3f(0.0f, 0.0f, 1.0f),
-            swingAngle = Math.toRadians(70.0).toFloat(),
-            minTwistAngle = -Math.toRadians(20.0).toFloat(),
-            maxTwistAngle = Math.toRadians(20.0).toFloat(),
+            x1 = Vector3f(1f, 0f, 0f),
+            y1 = Vector3f(0f, 0f, 1f),
+            x2 = Vector3f(1f, 0f, 0f),
+            z2 = Vector3f(0f, -1f, 0f),
+            maxXAngle = Math.toRadians(70.0).toFloat(),
+            maxYAngle = Math.toRadians(20.0).toFloat(),
+            minTwistAngle = -Math.toRadians(10.0).toFloat(),
+            maxTwistAngle = Math.toRadians(10.0).toFloat()
         )
 
-        join(
+        joinHinge(
             a = leftLeg,
             aName = "leftLeg",
             aPos = Vector3f(0.0f, -0.5f + MARGIN, 0.0f),
             b = leftForeLeg,
             bName = "leftForeLeg",
             bPos = Vector3f(0.0f, 0.5f - MARGIN, 0.0f),
-            jA = Vector3f(1.0f, 0.0f, 0.0f),
-            jB = Vector3f(1.0f, 0.0f, 0.0f),
-            gA = Vector3f(0.0f, 1.0f, 0.0f),
-            gB = Vector3f(0.0f, 1.0f, 0.0f),
+            a1 = Vector3f(1f, 0f, 0f),
+            n1 = Vector3f(0f, 1f, 0f),
+            a2 = Vector3f(1f, 0f, 0f),
+            n2 = Vector3f(0f, 1f, 0f),
             minAngle = 0f,
-            maxAngle = Math.toRadians(80.0).toFloat(),
+            maxAngle = Math.toRadians(80.0).toFloat()
+        )
+
+        return Ragdoll(
+            head,
+            chest,
+            waist,
+            hip,
+            rightArm,
+            rightForeArm,
+            leftArm,
+            leftForeArm,
+            rightLeg,
+            rightForeLeg,
+            leftLeg,
+            leftForeLeg,
         )
     }
 
@@ -219,8 +238,8 @@ object RagdollCreator {
         } else {
             rot.rotationY(Math.toRadians(-player.bodyYaw.toDouble()))
         }
-        
-        val isLocked = false
+
+        val isLocked = false//name == "head"
         val body =
             ItemDisplayCuboid(
                 Cuboid(
@@ -240,7 +259,7 @@ object RagdollCreator {
                     width = dims.x.toDouble() / 16,
                     height = dims.y.toDouble() / 16,
                     length = dims.z.toDouble() / 16,
-                    density = if (isLocked) 1_000_000.0 else 1.0,
+                    density = if (isLocked) 1_00_000.0 else 1.0,
                     hasGravity = !isLocked,
                 )/*.blockEntity(Material.GLASS)*/,
                 stack = stack.itemStack,
@@ -256,83 +275,108 @@ object RagdollCreator {
         return body
     }
 
-    private fun join(
+    private fun joinCone(
         a: ActiveBody,
         aName: String,
         aPos: Vector3f,
-        aOffset: Vector3f = Vector3f(),
         b: ActiveBody,
         bName: String,
         bPos: Vector3f,
-        bOffset: Vector3f = Vector3f(),
-        jA: Vector3f,
-        jB: Vector3f,
-        gA: Vector3f,
-        gB: Vector3f,
-        swingAngle: Float,
+        x1: Vector3f,
+        y1: Vector3f,
+        x2: Vector3f,
+        z2: Vector3f,
+        maxXAngle: Float,
+        maxYAngle: Float,
         minTwistAngle: Float,
         maxTwistAngle: Float,
     ) {
         val tag = Tag("kukla_$aName+$bName", collide = false)
         a.tags += tag
         b.tags += tag
-        a.physicsWorld.sphericalJointConstraints.addConstraint(
-            a = a,
-            ra = Vector3d(dimensions[aName]!!).mul(aPos).mul(1 / 16.0).add(aOffset),
-            b = b,
-            rb = Vector3d(dimensions[bName]!!).mul(bPos).mul(1 / 16.0).add(bOffset),
-        )
-        a.physicsWorld.angularConstraints.addConstraint(
-            a = a,
-            b = b,
-            jA = jA,
-            jB = jB,
-            gA = gA,
-            gB = gB,
-            swingAngle = swingAngle,
-            minTwistAngle = minTwistAngle,
-            maxTwistAngle = maxTwistAngle,
+        a.physicsWorld.constraintManager.constrain(
+            ConeConstraint(
+                b1 = a,
+                r1x = dimensions[aName]!!.x * aPos.x / 16f,
+                r1y = dimensions[aName]!!.y * aPos.y / 16f,
+                r1z = dimensions[aName]!!.z * aPos.z / 16f,
+                b2 = b,
+                r2x = dimensions[bName]!!.x * bPos.x / 16f,
+                r2y = dimensions[bName]!!.y * bPos.y / 16f,
+                r2z = dimensions[bName]!!.z * bPos.z / 16f,
+
+                x1x = x1.x,
+                x1y = x1.y,
+                x1z = x1.z,
+
+                y1x = y1.x,
+                y1y = y1.y,
+                y1z = y1.z,
+
+                x2x = x2.x,
+                x2y = x2.y,
+                x2z = x2.z,
+
+                z2x = z2.x,
+                z2y = z2.y,
+                z2z = z2.z,
+
+                maxXAngle = maxXAngle,
+                maxYAngle = maxYAngle,
+
+                minTwistAngle = minTwistAngle,
+                maxTwistAngle = maxTwistAngle,
+            )
         )
     }
 
-    private fun join(
+    private fun joinHinge(
         a: ActiveBody,
         aName: String,
         aPos: Vector3f,
         b: ActiveBody,
         bName: String,
         bPos: Vector3f,
-        jA: Vector3f,
-        jB: Vector3f,
-        gA: Vector3f,
-        gB: Vector3f,
+        a1: Vector3f,
+        n1: Vector3f,
+        a2: Vector3f,
+        n2: Vector3f,
         minAngle: Float,
         maxAngle: Float,
     ) {
         val tag = Tag("kukla_$aName+$bName", collide = false)
         a.tags += tag
         b.tags += tag
-        a.physicsWorld.sphericalJointConstraints.addConstraint(
-            a = a,
-            ra = Vector3d(dimensions[aName]!!).mul(aPos).mul(1 / 16.0),
-            b = b,
-            rb = Vector3d(dimensions[bName]!!).mul(bPos).mul(1 / 16.0),
-        )
-        a.physicsWorld.angularConstraints.addConstraint(
-            a = a,
-            b = b,
-            bodyAAxis = jA,
-            bodyBAxis = jB,
-        )
-        a.physicsWorld.angularConstraints.addConstraint(
-            a = a,
-            b = b,
-            jA = jA,
-            jB = jB,
-            gA = gA,
-            gB = gB,
-            minAngle = minAngle,
-            maxAngle = maxAngle,
+        a.physicsWorld.constraintManager.constrain(
+            HingeConstraint(
+                b1 = a,
+                r1x = dimensions[aName]!!.x * aPos.x / 16f,
+                r1y = dimensions[aName]!!.y * aPos.y / 16f,
+                r1z = dimensions[aName]!!.z * aPos.z / 16f,
+                b2 = b,
+                r2x = dimensions[bName]!!.x * bPos.x / 16f,
+                r2y = dimensions[bName]!!.y * bPos.y / 16f,
+                r2z = dimensions[bName]!!.z * bPos.z / 16f,
+
+                a1x = a1.x,
+                a1y = a1.y,
+                a1z = a1.z,
+
+                a2x = a2.x,
+                a2y = a2.y,
+                a2z = a2.z,
+
+                n1x = n1.x,
+                n1y = n1.y,
+                n1z = n1.z,
+
+                n2x = n2.x,
+                n2y = n2.y,
+                n2z = n2.z,
+
+                min = minAngle,
+                max = maxAngle,
+            )
         )
     }
 

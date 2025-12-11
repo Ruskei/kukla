@@ -23,7 +23,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     compileOnly("io.github.toxicity188:bettermodel:1.13.3")
     compileOnly("com.github.retrooper:packetevents-spigot:2.9.5")
-    compileOnly(files("gradle/build/libs/udar-0.6.0.jar"))
+    compileOnly(files("gradle/build/libs/udar-0.9.1.jar"))
 }
 
 tasks {
