@@ -2,9 +2,11 @@ package com.ixume.kuklaRagdolls
 
 import com.ixume.kuklaRagdolls.udar.ItemDisplayCuboid
 import com.ixume.udar.body.active.ActiveBody
+import com.ixume.udar.body.active.CompositeImpl
 import com.ixume.udar.body.active.Cuboid
 import com.ixume.udar.body.active.tag.Tag
 import com.ixume.udar.physics.cone.ConeConstraint
+import com.ixume.udar.physics.constraint.MiscMath.toRadians
 import com.ixume.udar.physics.hinge.HingeConstraint
 import com.ixume.udar.physicsWorld
 import kr.toxicity.model.api.BetterModel
@@ -14,23 +16,24 @@ import org.bukkit.entity.Player
 import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3f
+import java.util.*
 
 object RagdollCreator {
     fun create(player: Player): Ragdoll {
         val skinManager = BetterModel.plugin().skinManager()
         val data = skinManager.getOrRequest((player as CraftPlayer).handle.gameProfile)
-        val head = spawnObj(player, data.head(), "head")
-        val chest = spawnObj(player, data.chest(), "chest")
-        val waist = spawnObj(player, data.waist(), "waist")
-        val hip = spawnObj(player, data.hip(), "hip")
-        val rightArm = spawnObj(player, data.rightArm(), "rightArm")
-        val rightForeArm = spawnObj(player, data.rightForeArm(), "rightForeArm")
-        val leftArm = spawnObj(player, data.leftArm(), "leftArm")
-        val leftForeArm = spawnObj(player, data.leftForeArm(), "leftForeArm")
-        val rightLeg = spawnObj(player, data.rightLeg(), "rightLeg")
-        val rightForeLeg = spawnObj(player, data.rightForeLeg(), "rightForeLeg")
-        val leftLeg = spawnObj(player, data.leftLeg(), "leftLeg")
-        val leftForeLeg = spawnObj(player, data.leftForeLeg(), "leftForeLeg")
+        val head = obj(player, data.head(), "head").spawn()
+        val chest = obj(player, data.chest(), "chest").spawn()
+        val waist = obj(player, data.waist(), "waist").spawn()
+        val hip = obj(player, data.hip(), "hip").spawn()
+        val rightArm = obj(player, data.rightArm(), "rightArm").spawn()
+        val rightForeArm = obj(player, data.rightForeArm(), "rightForeArm").spawn()
+        val leftArm = obj(player, data.leftArm(), "leftArm").spawn()
+        val leftForeArm = obj(player, data.leftForeArm(), "leftForeArm").spawn()
+        val rightLeg = obj(player, data.rightLeg(), "rightLeg").spawn()
+        val rightForeLeg = obj(player, data.rightForeLeg(), "rightForeLeg").spawn()
+        val leftLeg = obj(player, data.leftLeg(), "leftLeg").spawn()
+        val leftForeLeg = obj(player, data.leftForeLeg(), "leftForeLeg").spawn()
 
         joinCone(
             a = head,
@@ -227,7 +230,242 @@ object RagdollCreator {
         )
     }
 
-    private fun spawnObj(player: Player, stack: TransformedItemStack, name: String): ActiveBody {
+    fun createVanilla(player: Player, after: (VanillaRagdoll?) -> Unit) {
+        val skinManager = BetterModel.plugin().skinManager()
+        val data = skinManager.getOrRequest((player as CraftPlayer).handle.gameProfile)
+        val tag = Tag(UUID.randomUUID().toString(), collide = false)
+
+        val o = player.location.toVector().toVector3d()
+        val pw = player.world.physicsWorld ?: return
+        val cm = pw.constraintManager
+
+        val head = obj(player, data.head(), "head").tag(tag)
+        val chest = obj(player, data.chest(), "chest")
+        val waist = obj(player, data.waist(), "waist")
+        val hip = obj(player, data.hip(), "hip")
+
+        val rightArm = obj(player, data.rightArm(), "rightArm")
+        val rightForeArm = obj(player, data.rightForeArm(), "rightForeArm")
+        val leftArm = obj(player, data.leftArm(), "leftArm")
+        val leftForeArm = obj(player, data.leftForeArm(), "leftForeArm")
+        val rightLeg = obj(player, data.rightLeg(), "rightLeg")
+        val rightForeLeg = obj(player, data.rightForeLeg(), "rightForeLeg")
+        val leftLeg = obj(player, data.leftLeg(), "leftLeg")
+        val leftForeLeg = obj(player, data.leftForeLeg(), "leftForeLeg")
+
+        val q = Quaterniond()
+        q.rotationY(Math.toRadians(-player.bodyYaw.toDouble()))
+
+        val physicsWorld = player.world.physicsWorld ?: return
+        physicsWorld.run {
+            head.spawn()
+
+            val body = composite(o, q, chest, waist, hip)!!.tag(tag)
+            val rightLimb = composite(o, q, rightArm, rightForeArm)!!.tag(tag)
+            val leftLimb = composite(o, q, leftArm, leftForeArm)!!.tag(tag)
+            val rightLowerLimb = composite(o, q, rightLeg, rightForeLeg)!!.tag(tag)
+            val leftLowerLimb = composite(o, q, leftLeg, leftForeLeg)!!.tag(tag)
+
+            cm.constrain(
+                ConeConstraint(
+                    b1 = head,
+                    r1x = 0f,
+                    r1y = -7.5f / 2f / 16f,
+                    r1z = 0f,
+                    b2 = body,
+                    r2x = 0f,
+                    r2y = 5.625f / 16f,
+                    r2z = 0f,
+
+                    x1x = 1f,
+                    x1y = 0f,
+                    x1z = 0f,
+
+                    y1x = 0f,
+                    y1y = 0f,
+                    y1z = 1f,
+
+                    x2x = 1f,
+                    x2y = 0f,
+                    x2z = 0f,
+
+                    z2x = 0f,
+                    z2y = -1f,
+                    z2z = 0f,
+
+                    maxXAngle = 30f.toRadians(),
+                    maxYAngle = 30f.toRadians(),
+                    minTwistAngle = (-30f).toRadians(),
+                    maxTwistAngle = 30f.toRadians()
+                )
+            )
+
+            run {
+                val jointDir = Vector3f(-1f, 0f, 0f)
+                    .rotateZ((-70f).toRadians())
+                    .normalize()
+
+                cm.constrain(
+                    ConeConstraint(
+                        b1 = body,
+                        r1x = -7.5f / 2f / 16f,
+                        r1y = 5.625f / 16f,
+                        r1z = 0f,
+                        b2 = rightLimb,
+                        r2x = 3.75f / 2f / 16f,
+                        r2y = 5.625f / 16f,
+                        r2z = 0f,
+
+                        x1x = 0f,
+                        x1y = 0f,
+                        x1z = 1f,
+
+                        y1x = jointDir.x,
+                        y1y = jointDir.y,
+                        y1z = 0f,
+
+                        x2x = 0f,
+                        x2y = 0f,
+                        x2z = 1f,
+
+                        z2x = 0f,
+                        z2y = -1f,
+                        z2z = 0f,
+
+                        maxXAngle = 65f.toRadians(),
+                        maxYAngle = 65f.toRadians(),
+                        minTwistAngle = (-30f).toRadians(),
+                        maxTwistAngle = 30f.toRadians()
+                    )
+                )
+            }
+
+            run {
+                val jointDir = Vector3f(1f, 0f, 0f)
+                    .rotateZ((70f).toRadians())
+                    .normalize()
+
+                cm.constrain(
+                    ConeConstraint(
+                        b1 = body,
+                        r1x = 7.5f / 2f / 16f,
+                        r1y = 5.625f / 16f,
+                        r1z = 0f,
+                        b2 = leftLimb,
+                        r2x = -3.75f / 2f / 16f,
+                        r2y = 5.625f / 16f,
+                        r2z = 0f,
+
+                        x1x = 0f,
+                        x1y = 0f,
+                        x1z = -1f,
+
+                        y1x = jointDir.x,
+                        y1y = jointDir.y,
+                        y1z = 0f,
+
+                        x2x = 0f,
+                        x2y = 0f,
+                        x2z = -1f,
+
+                        z2x = 0f,
+                        z2y = -1f,
+                        z2z = 0f,
+
+                        maxXAngle = 65f.toRadians(),
+                        maxYAngle = 65f.toRadians(),
+                        minTwistAngle = (-30f).toRadians(),
+                        maxTwistAngle = 30f.toRadians()
+                    )
+                )
+            }
+
+            run {
+                val jointDir = Vector3f(-1f, 0f, 0f)
+                    .rotateZ((-20f).toRadians())
+                    .normalize()
+
+                cm.constrain(
+                    ConeConstraint(
+                        b1 = body,
+                        r1x = -7.5f / 4f / 16f,
+                        r1y = -5.625f / 16f,
+                        r1z = 0f,
+                        b2 = rightLowerLimb,
+                        r2x = 0f,
+                        r2y = 5.625f / 16f,
+                        r2z = 0f,
+
+                        x1x = jointDir.x,
+                        x1y = jointDir.y,
+                        x1z = 0f,
+
+                        y1x = 0f,
+                        y1y = 0f,
+                        y1z = -1f,
+
+                        x2x = -1f,
+                        x2y = 0f,
+                        x2z = 0f,
+
+                        z2x = 0f,
+                        z2y = -1f,
+                        z2z = 0f,
+
+                        maxXAngle = 80f.toRadians(),
+                        maxYAngle = 20f.toRadians(),
+                        minTwistAngle = (-10f).toRadians(),
+                        maxTwistAngle = 10f.toRadians()
+                    )
+                )
+            }
+
+            run {
+                val jointDir = Vector3f(1f, 0f, 0f)
+                    .rotateZ(20f.toRadians())
+                    .normalize()
+
+                cm.constrain(
+                    ConeConstraint(
+                        b1 = body,
+                        r1x = 7.5f / 4f / 16f,
+                        r1y = -5.625f / 16f,
+                        r1z = 0f,
+                        b2 = leftLowerLimb,
+                        r2x = 0f,
+                        r2y = 5.625f / 16f,
+                        r2z = 0f,
+
+                        x1x = jointDir.x,
+                        x1y = jointDir.y,
+                        x1z = 0f,
+
+                        y1x = 0f,
+                        y1y = 0f,
+                        y1z = 1f,
+
+                        x2x = 1f,
+                        x2y = 0f,
+                        x2z = 0f,
+
+                        z2x = 0f,
+                        z2y = -1f,
+                        z2z = 0f,
+
+                        maxXAngle = 80f.toRadians(),
+                        maxYAngle = 20f.toRadians(),
+                        minTwistAngle = (-10f).toRadians(),
+                        maxTwistAngle = 10f.toRadians()
+                    )
+                )
+
+                val doll = VanillaRagdoll(head, body, rightLimb, leftLimb, rightLowerLimb, leftLowerLimb)
+                after(doll)
+            }
+        }
+    }
+
+    private fun obj(player: Player, stack: TransformedItemStack, name: String): ActiveBody {
         val offset = offsets[name]!!
         val mOffset = modelOffsets[name]!!
         val dims = dimensions[name]!!
@@ -239,7 +477,7 @@ object RagdollCreator {
             rot.rotationY(Math.toRadians(-player.bodyYaw.toDouble()))
         }
 
-        val isLocked = false//name == "head"
+        val isLocked = false/*name == "head"*/
         val body =
             ItemDisplayCuboid(
                 Cuboid(
@@ -270,10 +508,28 @@ object RagdollCreator {
                 )
             )
 
-        player.world.physicsWorld?.registerBody(body)
-
         return body
     }
+
+    private fun composite(origin: Vector3d, q: Quaterniond, vararg objs: ActiveBody): ActiveBody? {
+        if (objs.isEmpty()) return null
+        val w = objs[0].world
+        return CompositeImpl(
+            world = w,
+            velocity = Vector3d(),
+            q = Quaterniond(q),
+            omega = Vector3d(),
+            hasGravity = true,
+            parts = objs.toList(),
+            origin = origin,
+        ).spawn()
+    }
+
+    private fun ActiveBody.spawn(): ActiveBody = apply {
+        physicsWorld.registerBody(this)
+    }
+
+    private fun ActiveBody.tag(tag: Tag): ActiveBody = apply { tags += tag }
 
     private fun joinCone(
         a: ActiveBody,

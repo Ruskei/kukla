@@ -17,3 +17,13 @@ data class Ragdoll(
     val leftLeg: ActiveBody,
     val leftForeLeg: ActiveBody,
 )
+
+@JvmRecord
+data class VanillaRagdoll(
+    val head: ActiveBody,
+    val body: ActiveBody,
+    val rightArm: ActiveBody,
+    val leftArm: ActiveBody,
+    val rightLeg: ActiveBody,
+    val leftLeg: ActiveBody,
+)

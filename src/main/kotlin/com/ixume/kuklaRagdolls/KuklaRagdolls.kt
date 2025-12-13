@@ -11,6 +11,7 @@ class KuklaRagdolls : JavaPlugin() {
         PacketEvents.getAPI().eventManager.registerListener(Listener, PacketListenerPriority.NORMAL)
 
         TestCommand.init()
+        VanillaTestCommand.init()
         PlayerDeathListener.init()
     }
 

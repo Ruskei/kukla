@@ -1,6 +1,8 @@
 package com.ixume.kuklaRagdolls.udar
 
+import com.ixume.kuklaRagdolls.KuklaRagdolls
 import com.ixume.udar.body.active.ActiveBody
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.ItemDisplay
@@ -15,7 +17,7 @@ class ItemDisplayCuboid(
     stack: ItemStack,
     val modelOffset: Vector3d,
 ) : ActiveBody by cuboid {
-    private val display: ItemDisplay
+    private var display: ItemDisplay? = null
 
     private val _v = Vector3f()
     private val _s = Vector3f(1f)
@@ -23,19 +25,25 @@ class ItemDisplayCuboid(
     private val _eq = Quaternionf()
 
     init {
-        val p = Vector3d(pos).add(Vector3d(modelOffset).rotate(q))
-        display = world.spawnEntity(
-            Location(world, p.x, p.y, p.z),
-            EntityType.ITEM_DISPLAY
-        ) as ItemDisplay
+        Bukkit.getScheduler().runTask(KuklaRagdolls.INSTANCE, Runnable {
+            val p = Vector3d(pos).add(Vector3d(modelOffset).rotate(q))
+            val display = world.spawnEntity(
+                Location(world, p.x, p.y, p.z),
+                EntityType.ITEM_DISPLAY
+            ) as ItemDisplay
 
-        display.setItemStack(stack)
+            display.setItemStack(stack)
 
-        display.transformation = createTransformation()
-        display.itemDisplayTransform = ItemDisplay.ItemDisplayTransform.FIXED
-        display.interpolationDuration = 3
-        display.interpolationDelay = 0
-        display.teleportDuration = 3
+            display.transformation = createTransformation()
+            display.itemDisplayTransform = ItemDisplay.ItemDisplayTransform.FIXED
+            display.interpolationDuration = 3
+            display.interpolationDelay = 0
+            display.teleportDuration = 3
+
+            this.display = display
+
+            cuboid.visualize()
+        })
     }
 
     private fun createTransformation(): Transformation {
@@ -52,16 +60,19 @@ class ItemDisplayCuboid(
     override fun visualize() {
         if (!awake.get()) return
 
+        cuboid.visualize()
+        val d = display ?: return
         val pos2 = modelPos.set(pos).add(Vector3d(modelOffset).rotate(q))
-        display.interpolationDuration = 3
-        display.interpolationDelay = 0
-        display.teleportDuration = 3
-        display.transformation = createTransformation()
-        display.teleport(Location(world, pos2.x, pos2.y, pos2.z))
+        d.interpolationDuration = 3
+        d.interpolationDelay = 0
+        d.teleportDuration = 3
+        d.transformation = createTransformation()
+        d.teleport(Location(world, pos2.x, pos2.y, pos2.z))
+
     }
 
     override fun onKill() {
         cuboid.onKill()
-        display.remove()
+        display?.remove()
     }
 }
